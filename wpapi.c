@@ -89,7 +89,7 @@ static int read_config(void)
        fprintf(stderr, "username not defined in config\n"); 
        ret = -1;
     } else {
-        tmp = config_setting_get_string(setting);
+        tmp = (char *)config_setting_get_string(setting);
         username = malloc((strlen(tmp) + 1) * sizeof(char));
         strcpy(username, tmp);
     }
@@ -100,7 +100,7 @@ static int read_config(void)
        fprintf(stderr, "password not defined in config\n"); 
        ret = -1;
     } else {
-        tmp = config_setting_get_string(setting);
+        tmp = (char *)config_setting_get_string(setting);
         password = malloc((strlen(tmp) + 1) * sizeof(char));
         strcpy(password, tmp);
     }
@@ -111,7 +111,7 @@ static int read_config(void)
        fprintf(stderr, "blogurl not defined in config\n"); 
        ret = -1;
     } else {
-        tmp = config_setting_get_string(setting);
+        tmp = (char *)config_setting_get_string(setting);
         blogurl = malloc((strlen(tmp) + 1) * sizeof(char));
         strcpy(blogurl, tmp);
     }
@@ -119,6 +119,11 @@ static int read_config(void)
     config_destroy(&cfg);
 
     return ret;
+}
+
+static void xmlrpc_error(void)
+{
+    fprintf(stderr, "XML-RPC Fault: %s (%d)\n", rpc_env.fault_string, rpc_env.fault_code);
 }
 
 static struct wp_post *get_posts(void)
@@ -132,10 +137,10 @@ static struct wp_post *get_posts(void)
     /* wp.getUsersBlogs(username, password) */
     char *const method_name = "wp.getUsersBlogs";
 
-    xmlrpc_client_call2f(&rpc_env, rpc_client, blogurl, method_name, &result, "ss", 
+    xmlrpc_client_call2f(&rpc_env, rpc_client, blogurl, method_name, &result, "(ss)", 
                          username, password);
+    xmlrpc_error();
 
-    printf("%d\n", xmlrpc_value_type(result));
     /*
     // Get our state name and print it out. 
     xmlrpc_parse_value(&env, resultP, "i", &sum);
@@ -147,6 +152,7 @@ static struct wp_post *get_posts(void)
     //xmlrpc_DECREF(result);
 
     printf("test\n");
+
     if(posts == NULL)
         return NULL;
 
@@ -164,6 +170,12 @@ static struct wp_post *get_posts(void)
     return posts;
 }
 
+char *get_post(int post_id)
+{
+    /* FIXME: Implement */
+    return NULL;
+}
+
 static void free_posts(struct wp_post *posts)
 {
     int i;
@@ -171,6 +183,11 @@ static void free_posts(struct wp_post *posts)
 
     for(i = 0; i < post_count; i++) {
         free(post->slug_path);
+
+        if(post->content) {
+            free(post->content);
+        }
+
         post++;
     }
 
@@ -181,4 +198,5 @@ int postslen(struct wp_post *posts)
 {
     return post_count;
 }
+
 

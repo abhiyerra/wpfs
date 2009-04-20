@@ -67,7 +67,7 @@ static int wpfs_getattr(const char *path, struct stat *stbuf)
             stbuf->st_nlink = 1;
 
             /* FIXME: Get the actual size eventually */
-            stbuf->st_size = 100; 
+            /* stbuf->st_size = 100; */
 
             syslog(LOG_INFO, "In getattr path = %s \n", path);
             return 0;
@@ -126,23 +126,38 @@ static int wpfs_open(const char *path, struct fuse_file_info *fi)
 static int wpfs_read(const char *path, char *buf, size_t size, off_t offset,
                      struct fuse_file_info *fi)
 {
+    int i = 0;
+    struct wp_post *post = posts;
     size_t len;
     (void) fi;
 
     syslog(LOG_INFO, "In read\n");
 
-    if(strcmp(path, wpfs_path) != 0)
-        return -ENOENT;
+    for(i = 0; i < postslen(posts); i++) {
+        if(strcmp(path, post->slug_path) == 0) {
+            len = strlen(post->content);
 
-    len = strlen(wpfs_str);
-    if (offset < len) {
-        if (offset + size > len)
-            size = len - offset;
-        memcpy(buf, wpfs_str + offset, size);
-    } else
-        size = 0;
+            if (offset < len) {
+                if (offset + size > len) {
+                    size = len - offset;
+                }
+                memcpy(buf, post->content + offset, size);
+            } else {
+                size = 0;
+            }
 
-    return size;
+            return size;
+        }
+
+        post++;
+    }
+
+    return -ENOENT;
+}
+
+static void wpfs_init(struct fuse_conn_info *conn) 
+{
+    wp_init(posts);
 }
 
 static void wpfs_destroy(void)
@@ -155,14 +170,12 @@ static struct fuse_operations wpfs_oper = {
     .readdir  = wpfs_readdir,
     .open = wpfs_open,
     .read = wpfs_read,
+/*    .init = wpfs_init, */
     .destroy = wpfs_destroy
 };
 
 int main(int argc, char *argv[])
 {
-    wp_init(posts);
-
-    printf("Len: %d\n", postslen(posts));
-
+    wpfs_init(NULL);
 //    return fuse_main(argc, argv, &wpfs_oper, NULL);
 }
