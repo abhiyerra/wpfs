@@ -1,13 +1,15 @@
-#ifndef WPFS_H
-#define WPFS_H
+#ifndef WPAPI_H
+#define WPAPI_H
 
 struct wp_post {
     int post_id;
     char *slug_path;
+    char *content;
 };
 
-struct wp_post *get_posts(void);
-void free_posts(struct wp_post *posts);
+
+int wp_init(struct wp_post *posts);
+int wp_destroy(struct wp_post *posts);
 int postslen(struct wp_post *posts);
 
-#endif /* WPFS_H */
+#endif /* WPAPI_H */

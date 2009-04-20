@@ -89,7 +89,7 @@ self.files[self.root + '/'] = {
 static const char *wpfs_str = "Hello World!\n";
 static const char *wpfs_path = "/wpfs";
 
-struct wp_post *posts;
+static struct wp_post *posts;
 
 static int wpfs_getattr(const char *path, struct stat *stbuf)
 {
@@ -198,7 +198,7 @@ static int wpfs_read(const char *path, char *buf, size_t size, off_t offset,
 
 static void wpfs_destroy(void)
 {
-    free_posts(posts);
+    wp_destroy(posts);
 }
 
 static struct fuse_operations wpfs_oper = {
@@ -211,7 +211,7 @@ static struct fuse_operations wpfs_oper = {
 
 int main(int argc, char *argv[])
 {
-    posts = get_posts();
+    wp_init(posts);
 
     printf("Len: %d\n", postslen(posts));
 
