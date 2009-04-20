@@ -1,6 +1,8 @@
 #ifndef WPAPI_H
 #define WPAPI_H
 
+#define WPFS_CFG "wpfs.cfg"
+
 struct wp_post {
     int post_id;
     char *slug_path;

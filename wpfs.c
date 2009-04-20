@@ -23,58 +23,7 @@ Layout:
 - A .meta file should be created for each uploaded file.
 */
 
-/*
-   self.blog_url = blog_url
-   self.username = username
-   self.password = password
 
-   self.root = '.'
-
-# Connect to the xml-rpc
-# http://codex.wordpress.org/XML-RPC 
-xmlrpc = self.blog_url + '/xmlrpc.php'
-self.client = xmlrpclib.ServerProxy(xmlrpc)
-
-# Load posts
-my_blogs = self.client.wp.getUsersBlogs(username, password)
-
-# url, isAdmin, blogid, xmlrpc, blogName
-self.blog_info = my_blogs[0]
-
-# Find the blog we are looking for based on blog_url if there is more than one blog.
-if len(my_blogs) > 1:
-for blog in my_blogs:
-if self.blog_url in blog['url']:
-self.blog_info = blog
-
-self.posts = self.client.metaWeblog.getRecentPosts(self.blog_info['blogid'], username, password, '0')
-
-self.files = {}
-
-for post in self.posts:
-self.files[self.root + '/' + post['wp_slug']] = {
-'st_mode': 0755,
-'st_uid': os.getuid(),
-'st_gid': os.getgid(),
-'st_mtime': time(), 
-'st_atime': time()
-}
-
-
-self.files[self.root + '/'] = {
-'st_mode': 0755,    # If file is pending +grw if pubish +orw
-'st_ino': '0',      # inode number - is the post id.
-
-#      'st_size':  (size of file, in bytes)
-'st_uid': os.getuid(),
-'st_gid': os.getgid(),
-'st_nlink': len(self.posts) + 1,
-'st_ctime': time(), 
-'st_mtime': time(), 
-'st_atime': time()
-}
-
-*/
 
 #include <fuse.h>
 #include <stdio.h>
@@ -215,5 +164,5 @@ int main(int argc, char *argv[])
 
     printf("Len: %d\n", postslen(posts));
 
-    return fuse_main(argc, argv, &wpfs_oper, NULL);
+//    return fuse_main(argc, argv, &wpfs_oper, NULL);
 }
