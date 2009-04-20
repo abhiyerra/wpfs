@@ -1,17 +1,5 @@
 /*
-   self.blog_url = blog_url
-   self.username = username
-   self.password = password
-
-   self.root = '.'
-
-# Connect to the xml-rpc
-# http://codex.wordpress.org/XML-RPC 
-xmlrpc = self.blog_url + '/xmlrpc.php'
-self.client = xmlrpclib.ServerProxy(xmlrpc)
-
 # Load posts
-my_blogs = self.client.wp.getUsersBlogs(username, password)
 
 # url, isAdmin, blogid, xmlrpc, blogName
 self.blog_info = my_blogs[0]
@@ -136,18 +124,19 @@ static int read_config(void)
 static struct wp_post *get_posts(void)
 {
     int i;
-    struct wp_post *posts = NULL; //malloc(post_count * sizeof(struct wp_post));
-    struct wp_post *post = NULL;
+    struct wp_post *posts = malloc(post_count * sizeof(struct wp_post));
+    struct wp_post *post = posts;
 
     xmlrpc_value *result;
 
+    /* wp.getUsersBlogs(username, password) */
+    char *const method_name = "wp.getUsersBlogs";
+
+    xmlrpc_client_call2f(&rpc_env, rpc_client, blogurl, method_name, &result, "ss", 
+                         username, password);
+
+    printf("%d\n", xmlrpc_value_type(result));
     /*
-    char *const methodName = "sample.add";
-
-    // Make the remote procedure call
-    xmlrpc_client_call2f(&env, clientP, url, methodName, &resultP,
-            "(ii)", (xmlrpc_int32) 5, (xmlrpc_int32) 7);
-
     // Get our state name and print it out. 
     xmlrpc_parse_value(&env, resultP, "i", &sum);
     printf("The sum  is %d\n", sum);
@@ -155,8 +144,9 @@ static struct wp_post *get_posts(void)
     */
 
     // Dispose of our result value.
-    xmlrpc_DECREF(result);
+    //xmlrpc_DECREF(result);
 
+    printf("test\n");
     if(posts == NULL)
         return NULL;
 
