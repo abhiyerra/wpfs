@@ -121,9 +121,10 @@ static int read_config(void)
     return ret;
 }
 
-static void xmlrpc_error(void)
+static void xmlrpc_error(int line)
 {
-    fprintf(stderr, "XML-RPC Fault: %s (%d)\n", rpc_env.fault_string, rpc_env.fault_code);
+    if(rpc_env.fault_code != 0) 
+        fprintf(stderr, "XML-RPC Fault in %s (%d): %s (%d)\n", __FILE__, line, rpc_env.fault_string, rpc_env.fault_code);
 }
 
 static struct wp_post *get_posts(void)
@@ -133,25 +134,45 @@ static struct wp_post *get_posts(void)
     struct wp_post *post = posts;
 
     xmlrpc_value *result;
+    xmlrpc_value *result2;
 
     /* wp.getUsersBlogs(username, password) */
     char *const method_name = "wp.getUsersBlogs";
 
     xmlrpc_client_call2f(&rpc_env, rpc_client, blogurl, method_name, &result, "(ss)", 
                          username, password);
-    xmlrpc_error();
+    xmlrpc_error(__LINE__);
 
-    /*
-    // Get our state name and print it out. 
-    xmlrpc_parse_value(&env, resultP, "i", &sum);
-    printf("The sum  is %d\n", sum);
+    for(i = 0; i < xmlrpc_array_size(&rpc_env, result); i++) {
+        xmlrpc_array_read_item(&rpc_env, result, i, &result2);
 
-    */
+        printf("%d\n", xmlrpc_struct_size(&rpc_env, result2));
+
+        xmlrpc_value *blog_id_xml;
+        xmlrpc_int blog_id;
+
+        xmlrpc_struct_read_value(&rpc_env, result2, "blog_id", blog_id_xml);
+        xmlrpc_read_int(&rpc_env, blog_id_xml, &blog_id);
+        printf("%d\n", blog_id);
+
+        printf("%d\n", i);
+        /*
+        xmlrpc_value *xml_rpc_str_xml;
+        char *xml_rpc_str;
+
+        xmlrpc_struct_read_value(&rpc_env, result2, "xmlrpc_url", &xml_rpc_str_xml);
+        printf("%d\n", xmlrpc_value_type(xml_rpc_str_xml));
+        xmlrpc_read_string(&rpc_env, xml_rpc_str_xml, xml_rpc_str);
+
+        printf("%s\n", xml_rpc_str);
+        */
+    }
+
 
     // Dispose of our result value.
     //xmlrpc_DECREF(result);
 
-    printf("test\n");
+    printf("here\n");
 
     if(posts == NULL)
         return NULL;
